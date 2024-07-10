@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 import 'package:example/chapter_drawer.dart';
 import 'package:example/search_page.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,27 +13,11 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -53,6 +40,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   var textSelectionCfi = '';
 
+  String selectedSource = 'Asset';
+  String filePath = '';
+  late Uint8List file;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +64,40 @@ class _MyHomePageState extends State<MyHomePage> {
                           )));
             },
           ),
+          PopupMenuButton<String>(
+            onSelected: (String value) async {
+              if (value == 'File') {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.any,
+                  withData: true,
+                );
+                if (result != null && result.files.first.path != null) {
+                  setState(() {
+                    file = result.files.first.bytes!;
+                    filePath = result.files.first.path!;
+                    selectedSource = value;
+                  });
+                }
+              } else {
+                setState(() {
+                  selectedSource = value;
+                });
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                'URL',
+                'Asset',
+                'File',
+              ].map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
+            },
+            icon: const Icon(Icons.more_vert),
+          ),
         ],
       ),
       body: SafeArea(
@@ -81,7 +105,14 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           Expanded(
             child: EpubViewer(
-              epubUrl: 'https://s3.amazonaws.com/moby-dick/OPS/package.opf',
+              epubSource: selectedSource == 'Asset'
+                  ? AssetEpubSource(
+                      assetPath: 'assets/sources/9780636158764.epub')
+                  : selectedSource == 'File' && filePath.isNotEmpty
+                      ? UInt8EpubSource(data: file)
+                      : UrlEpubSource(
+                          webUrl:
+                              'https://s3.amazonaws.com/epubjs/books/alice.epub'),
               epubController: epubController,
               displaySettings: EpubDisplaySettings(
                   flow: EpubFlow.paginated,
@@ -100,13 +131,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 settings: ContextMenuSettings(
                     hideDefaultSystemContextMenuItems: true),
               ),
-              headers: {},
               onChaptersLoaded: (chapters) {},
               onEpubLoaded: () async {
                 print('Epub loaded');
               },
               onRelocated: (value) {
-                print("Reloacted to $value");
+                print("Relocated to $value");
               },
               onTextSelected: (epubTextSelection) {
                 textSelectionCfi = epubTextSelection.selectionCfi;

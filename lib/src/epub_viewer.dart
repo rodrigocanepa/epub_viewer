@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_epub_viewer/src/epub_controller.dart';
+import 'package:flutter_epub_viewer/src/epub_source.dart';
 import 'package:flutter_epub_viewer/src/helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -11,8 +12,7 @@ class EpubViewer extends StatefulWidget {
   const EpubViewer({
     super.key,
     required this.epubController,
-    required this.epubUrl,
-    this.headers,
+    required this.epubSource,
     this.initialCfi,
     this.onChaptersLoaded,
     this.onEpubLoaded,
@@ -25,13 +25,10 @@ class EpubViewer extends StatefulWidget {
   ///Epub controller to manage epub
   final EpubController epubController;
 
-  ///Epub url to load epub from network
-  final String epubUrl;
+  ///Epub source to load epub
+  final EpubSource epubSource;
 
-  ///Epub headers to load epub from network
-  final Map<String, String>? headers;
-
-  ///Initial cfi string to  specify which part of epub to load initially
+  ///Initial cfi string to specify which part of epub to load initially
   ///if null, the first chapter will be loaded
   final String? initialCfi;
 
@@ -63,28 +60,45 @@ class _EpubViewerState extends State<EpubViewer> {
 
   final LocalServerController localServerController = LocalServerController();
 
-  // late PullToRefreshController pullToRefreshController;
-  // late ContextMenu contextMenu;
   var selectedText = '';
 
   InAppWebViewController? webViewController;
   InAppWebViewSettings settings = InAppWebViewSettings(
-      isInspectable: kDebugMode,
-      javaScriptEnabled: true,
-      mediaPlaybackRequiresUserGesture: false,
-      transparentBackground: true,
-      supportZoom: false,
-      allowsInlineMediaPlayback: true,
-      disableLongPressContextMenuOnLinks: false,
-      iframeAllowFullscreen: true,
-      allowsLinkPreview: false,
-      verticalScrollBarEnabled: false,
-      selectionGranularity: SelectionGranularity.CHARACTER);
+    isInspectable: kDebugMode,
+    javaScriptEnabled: true,
+    mediaPlaybackRequiresUserGesture: false,
+    transparentBackground: true,
+    supportZoom: false,
+    allowsInlineMediaPlayback: true,
+    disableLongPressContextMenuOnLinks: false,
+    iframeAllowFullscreen: true,
+    allowsLinkPreview: false,
+    verticalScrollBarEnabled: false,
+    selectionGranularity: SelectionGranularity.CHARACTER,
+    hardwareAcceleration: true,
+  );
 
   @override
   void initState() {
-    // widget.epubController.initServer();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    webViewController?.dispose();
+    super.dispose();
+  }
+
+  void sendUint8ListToWebView() async {
+    if (webViewController != null) {
+      Uint8List data = await widget.epubSource.getData();
+
+      await webViewController?.evaluateJavascript(source: '''
+        (function() {
+          receiveDataFromFlutter([${data.join(',')}]);
+        })();
+      ''');
+    }
   }
 
   addJavaScriptHandlers() {
@@ -95,10 +109,7 @@ class _EpubViewerState extends State<EpubViewer> {
         });
 
     webViewController?.addJavaScriptHandler(
-        handlerName: "rendered",
-        callback: (data) {
-          // widget.onEpubLoaded?.call();
-        });
+        handlerName: "rendered", callback: (data) {});
 
     webViewController?.addJavaScriptHandler(
         handlerName: "chapters",
@@ -139,8 +150,9 @@ class _EpubViewerState extends State<EpubViewer> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: localServerController.initServer(),
+        future: Future.wait([localServerController.initServer()]),
         builder: (context, snapshot) {
+          print('future loaded: ${snapshot.connectionState}');
           if (snapshot.connectionState != ConnectionState.done) {
             return Container();
           }
@@ -148,22 +160,29 @@ class _EpubViewerState extends State<EpubViewer> {
           final displaySettings = jsonEncode(widget.displaySettings?.toJson() ??
               EpubDisplaySettings().toJson());
 
-          final headers = jsonEncode(widget.headers);
+          final headers = widget.epubSource is UrlEpubSource
+              ? (widget.epubSource as UrlEpubSource).getHeaders()
+              : jsonEncode({});
 
           return InAppWebView(
             contextMenu: widget.selectionContextMenu,
             key: webViewKey,
             initialUrlRequest: URLRequest(
                 url: WebUri(
-                    'http://localhost:8080/html/swipe.html?epubUrl=${widget.epubUrl}&cfi=${widget.initialCfi ?? ''}&displaySettings=$displaySettings&headers=$headers')),
+                    'http://localhost:8080/html/swipe.html?&cfi=${widget.initialCfi ?? ''}&displaySettings=$displaySettings&headers=$headers')),
             initialSettings: settings,
-            // pullToRefreshController: pullToRefreshController,
             onWebViewCreated: (controller) {
               webViewController = controller;
               widget.epubController.setWebViewController(controller);
               addJavaScriptHandlers();
             },
-            onLoadStart: (controller, url) {},
+            onLoadStart: (controller, url) {
+              print('onLoadStart');
+            },
+            onLoadStop: (controller, url) async {
+              print('onLoadStop');
+              sendUint8ListToWebView();
+            },
             onPermissionRequest: (controller, request) async {
               return PermissionResponse(
                   resources: request.resources,
@@ -193,14 +212,13 @@ class _EpubViewerState extends State<EpubViewer> {
 
               return NavigationActionPolicy.ALLOW;
             },
-            onLoadStop: (controller, url) async {},
             onReceivedError: (controller, request, error) {},
             onProgressChanged: (controller, progress) {},
             onUpdateVisitedHistory: (controller, url, androidIsReload) {},
             onConsoleMessage: (controller, consoleMessage) {
               if (kDebugMode) {
-                debugPrint("JS_LOG: ${consoleMessage.message}");
-                // debugPrint(consoleMessage.message);
+                debugPrint(
+                    "InAppWebView [${consoleMessage.messageLevel}] ${consoleMessage.message}");
               }
             },
             gestureRecognizers: {
