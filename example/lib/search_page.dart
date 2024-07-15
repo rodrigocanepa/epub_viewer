@@ -2,9 +2,10 @@ import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 import 'package:flutter/material.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key, required this.epubController});
+  const SearchPage({super.key, required this.epubController, required this.onListItemTap});
 
   final EpubController epubController;
+  final Function(EpubSearchResult) onListItemTap; 
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -33,7 +34,17 @@ class _SearchPageState extends State<SearchPage> {
                     query = value;
                   });
 
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Searching!'),
+                    ),
+                  );
                   widget.epubController.search(query: value).then((value) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${value.length} results found!'),
+                      ),
+                    );
                     setState(() {
                       searchResult = value;
                     });
@@ -41,19 +52,28 @@ class _SearchPageState extends State<SearchPage> {
                 },
               ),
               Expanded(
-                  child: ListView.builder(
-                      itemCount: searchResult.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: HighlightText(
-                              text: searchResult[index].excerpt,
-                              highlight: query,
-                              style: const TextStyle(),
-                              highlightStyle: const TextStyle(
-                                backgroundColor: Colors.yellow,
-                              )),
-                        );
-                      }))
+                child: ListView.builder(
+                  itemCount: searchResult.length,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        widget.onListItemTap(searchResult[index]);
+                        Navigator.pop(context);
+                      },
+                      child: ListTile(
+                        title: HighlightText(
+                          text: searchResult[index].excerpt,
+                          highlight: query,
+                          style: const TextStyle(),
+                          highlightStyle: const TextStyle(
+                            backgroundColor: Colors.yellow,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
             ],
           ),
         ),
