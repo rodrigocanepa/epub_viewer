@@ -16,18 +16,16 @@
 
   <style type="text/css">
     body {
-      display: flex;
-      -webkit-align-items: center;
-      -webkit-justify-content: center;
+    display: flex;
+    align-items: center; /* Ahora se utiliza align-items en lugar de -webkit-align-items */
+    justify-content: center; /* Ahora se utiliza justify-content en lugar de -webkit-justify-content */
+    height: 100vh; /* Asegura que el cuerpo ocupe toda la altura del viewport */
+    margin: 0; /* Elimina el margen por defecto del cuerpo */
     }
 
     #viewer {
       width: 100%;
-      height: 100%;
-      /* width: 400px;
-      height: 580px; */
-      /* box-shadow: 0 0 4px #ccc; */
-      /* padding: 10px 10px 0px 10px; */
+      height: calc(100vh - 4px); /* Calcula el alto menos 40px */
       margin: 5px auto;
       background: white;
     }
