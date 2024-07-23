@@ -118,6 +118,10 @@ class EpubController {
     await webViewController?.evaluateJavascript(source: 'setFlow("$flow")');
   }
 
+  moveInitialScroll(int pixels) async {
+    await webViewController?.evaluateJavascript(source: 'scrollByTenPixels("$pixels")');
+  }
+
   ///Set [EpubManager] value
   setManager({required EpubManager manager}) async {
     await webViewController?.evaluateJavascript(
@@ -128,6 +132,11 @@ class EpubController {
   setFontSize({required double fontSize}) async {
     await webViewController?.evaluateJavascript(
         source: 'setFontSize("$fontSize")');
+  }
+
+  setTheme({required String background, required String colorText}) {
+    checkEpubLoaded();
+    webViewController?.evaluateJavascript(source: 'setBackgroundColor("$background", "$colorText")');
   }
 
   checkEpubLoaded() {
