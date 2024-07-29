@@ -157,19 +157,70 @@
 
     function setBackgroundColor(colorBackground, colorText){
       rendition.themes.default({
-        body: {
-        "background-color": `${colorBackground}`,
-        "color": `${colorText}`
-        },
-        a: {  // Estilo para los hipervínculos
-          "color": `${colorText}`,
-        },
-        table: {  // Estilo para las tablas
-          "color": `${colorText}`,
-        },
-        td: {  // Estilo para las celdas de tabla
-          "color": `${colorText}`,
-        },
+            body: {
+              "background-color": `${colorBackground}`,
+              "color": `${colorText} !important`,
+            },
+            a: {  // Estilo para los hipervínculos
+              "color": `${colorText} !important`,
+            },
+            table: {  // Estilo para las tablas
+              "color": `${colorText} !important`,
+            },
+            td: {  // Estilo para las celdas de tabla
+              "color": `${colorText} !important`,
+            },
+            th: {  // Estilo para los encabezados de tabla
+              "color": `${colorText} !important`,
+            },
+            p: {  // Estilo para párrafos
+              "color": `${colorText} !important`,
+            },
+            h1: {  // Estilo para encabezados de nivel 1
+              "color": `${colorText} !important`,
+            },
+            h2: {  // Estilo para encabezados de nivel 2
+              "color": `${colorText} !important`,
+            },
+            h3: {  // Estilo para encabezados de nivel 3
+              "color": `${colorText} !important`,
+            },
+            h4: {  // Estilo para encabezados de nivel 4
+              "color": `${colorText} !important`,
+            },
+            h5: {  // Estilo para encabezados de nivel 5
+              "color": `${colorText} !important`,
+            },
+            h6: {  // Estilo para encabezados de nivel 6
+              "color": `${colorText} !important`,
+            },
+            span: {  // Estilo para elementos en línea
+              "color": `${colorText} !important`,
+            },
+            div: {  // Estilo para divisiones
+              "color": `${colorText} !important`,
+            },
+            em: {  // Estilo para texto enfatizado
+              "color": `${colorText} !important`,
+            },
+            strong: {  // Estilo para texto en negrita
+              "color": `${colorText} !important`,
+            },
+            code: {  // Estilo para texto en formato de código
+              "color": `${colorText} !important`,
+            },
+            pre: {  // Estilo para bloques de código preformateado
+              "color": `${colorText} !important`,
+            },
+             ul: {  // Estilo para listas desordenadas
+              "color": `${colorText} !important`,
+            },
+            ol: {  // Estilo para listas ordenadas
+              "color": `${colorText} !important`,
+            },
+            li: {  // Estilo para elementos de lista
+              "color": `${colorText} !important`,
+            },
       });
     }
 
@@ -185,8 +236,8 @@
       rendition.themes.default({
         p: {
         // "margin": '10px',
-        "font-size":`${fontSize}px`
-      }
+        "font-size":`${fontSize}px !important`
+        }
       });
     }
 
