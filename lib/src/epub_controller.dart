@@ -102,6 +102,24 @@ class EpubController {
         source: 'addHighlight("$cfi", "$colorHex", "$opacityString")');
   }
 
+    ///Adds a note to epub viewer
+  addNote({
+    ///Cfi string of the desired location
+    required String cfi,
+
+    ///Color of the highlight
+    Color color = Colors.blue,
+
+    ///Opacity of the highlight
+    double opacity = 0.3,
+  }) {
+    var colorHex = color.toHex();
+    var opacityString = opacity.toString();
+    checkEpubLoaded();
+    webViewController?.evaluateJavascript(
+        source: 'addHighlight("$cfi", "$colorHex", "$opacityString")');
+  }
+
   ///Removes a highlight from epub viewer
   removeHighlight({required String cfi}) {
     checkEpubLoaded();
