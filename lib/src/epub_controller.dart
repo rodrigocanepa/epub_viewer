@@ -46,7 +46,9 @@ class EpubController {
       throw Exception("Epub locations not loaded");
     }
 
-    return EpubLocation.fromJson(result);
+    Map<String, dynamic> specificMap = Map<String, dynamic>.from(result);
+
+    return EpubLocation.fromJson(specificMap);
   }
 
   ///Returns list of [EpubChapter] from epub,
