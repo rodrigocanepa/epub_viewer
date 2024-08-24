@@ -123,6 +123,13 @@
     //move to given cfi location
     function toCfi(cfi){
       rendition.display(cfi)
+      if(displaySettings.fontSize){
+        rendition.themes.default({
+          p: {
+          // "margin": '10px',
+          "font-size":`${displaySettings.fontSize}px !important`
+          }
+      });
     }
 
     function getCurrentLocation(){
