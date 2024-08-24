@@ -75,6 +75,14 @@
         book = ePub();
         book.open(uint8Array);
         renderBook();
+       if(displaySettings.fontSize){
+        rendition.themes.default({
+          p: {
+          // "margin": '10px',
+          "font-size":`${displaySettings.fontSize}px !important`
+          }
+        });
+      }
     }
 
     function scrollByTenPixels(pixels) {
@@ -272,15 +280,6 @@
       displayed = rendition.display(cfi)
     }else{
       displayed = rendition.display(1)
-    }
-
-    if(displaySettings.fontSize){
-      rendition.themes.default({
-        p: {
-        // "margin": '10px',
-        "font-size":`${displaySettings.fontSize}px !important`
-        }
-      });
     }
 
     displayed.then(function(renderer){
