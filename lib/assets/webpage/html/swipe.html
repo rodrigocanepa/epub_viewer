@@ -274,6 +274,15 @@
       displayed = rendition.display(1)
     }
 
+    if(displaySettings.fontSize){
+      rendition.themes.default({
+        p: {
+        // "margin": '10px',
+        "font-size":`${displaySettings.fontSize}px !important`
+        }
+      });
+    }
+
     displayed.then(function(renderer){
       window.flutter_inappwebview.callHandler('displayed');
     });
