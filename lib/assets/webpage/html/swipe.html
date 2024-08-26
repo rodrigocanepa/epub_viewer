@@ -17,6 +17,8 @@
   <style type="text/css">
     body {
     display: flex;
+    overflow-x: hidden;
+    overflow-y: hidden;
     align-items: center; /* Ahora se utiliza align-items en lugar de -webkit-align-items */
     justify-content: center; /* Ahora se utiliza justify-content en lugar de -webkit-justify-content */
     height: 100vh; /* Asegura que el cuerpo ocupe toda la altura del viewport */
@@ -49,9 +51,9 @@
   </style>
 </head>
 <body>
-  <div id="viewer"></div>
-  <script>
-    
+<div id="viewer"></div>
+<script>
+
     var params = URLSearchParams && new URLSearchParams(document.location.search.substring(1));
     var epubUrl = params && params.get("epubUrl") && decodeURIComponent(params.get("epubUrl"));
     var accessToken = (params && params.get("accessToken")) ? params.get("accessToken") : undefined;
@@ -75,9 +77,6 @@
         book = ePub();
         book.open(uint8Array);
         renderBook();
-       if(displaySettings.fontSize){
-        setFontSize(displaySettings.fontSize);
-      }
     }
 
     function scrollByTenPixels(pixels) {
@@ -140,21 +139,12 @@
 
     // adds highlight with given color
     function addHighlight(cfiRange, color, opacity){
-      this.rendition.themes.default({
-      // '::selection': {
-      //   'background': 'rgba(255,255,0, 0.3)'
-      // },
-      // '.epubjs-hl' : {
-      //   'fill': color, 'fill-opacity': '0.3', 'mix-blend-mode': 'multiply',
-      //   // 'background': 'rgba(255,0,0, 0.3)'
-      // }
-      });
       rendition.annotations.highlight(cfiRange, {}, (e) => {
           // console.log("highlight clicked", e.target);
         },"hl", {"fill": color, "fill-opacity": '0.3', "mix-blend-mode": "multiply"});
     }
 
-    function removeHighLight(cfiString){
+    function removeHighlight(cfiString){
          rendition.annotations.remove(cfiString, "highlight");
     }
 
@@ -178,6 +168,7 @@
             },
             p: {  // Estilo para párrafos
               "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
             },
             h1: {  // Estilo para encabezados de nivel 1
               "color": `${colorText} !important`,
@@ -211,22 +202,103 @@
             },
             code: {  // Estilo para texto en formato de código
               "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
             },
             pre: {  // Estilo para bloques de código preformateado
               "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
             },
              ul: {  // Estilo para listas desordenadas
               "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
             },
             ol: {  // Estilo para listas ordenadas
               "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
             },
             li: {  // Estilo para elementos de lista
               "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
             },
       });
     }
 
+
+    function setFontSize(fontSize, colorBackground, colorText){
+      displaySettings.fontSize = fontSize;
+      rendition.themes.default({
+            body: {
+              "background-color": `${colorBackground}`,
+              "color": `${colorText} !important`,
+            },
+            a: {  // Estilo para los hipervínculos
+              "color": `${colorText} !important`,
+            },
+            table: {  // Estilo para las tablas
+              "color": `${colorText} !important`,
+            },
+            td: {  // Estilo para las celdas de tabla
+              "color": `${colorText} !important`,
+            },
+            th: {  // Estilo para los encabezados de tabla
+              "color": `${colorText} !important`,
+            },
+            p: {  // Estilo para párrafos
+              "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
+            },
+            h1: {  // Estilo para encabezados de nivel 1
+              "color": `${colorText} !important`,
+            },
+            h2: {  // Estilo para encabezados de nivel 2
+              "color": `${colorText} !important`,
+            },
+            h3: {  // Estilo para encabezados de nivel 3
+              "color": `${colorText} !important`,
+            },
+            h4: {  // Estilo para encabezados de nivel 4
+              "color": `${colorText} !important`,
+            },
+            h5: {  // Estilo para encabezados de nivel 5
+              "color": `${colorText} !important`,
+            },
+            h6: {  // Estilo para encabezados de nivel 6
+              "color": `${colorText} !important`,
+            },
+            span: {  // Estilo para elementos en línea
+              "color": `${colorText} !important`,
+            },
+            div: {  // Estilo para divisiones
+              "color": `${colorText} !important`,
+            },
+            em: {  // Estilo para texto enfatizado
+              "color": `${colorText} !important`,
+            },
+            strong: {  // Estilo para texto en negrita
+              "color": `${colorText} !important`,
+            },
+            code: {  // Estilo para texto en formato de código
+              "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
+            },
+            pre: {  // Estilo para bloques de código preformateado
+              "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
+            },
+             ul: {  // Estilo para listas desordenadas
+              "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
+            },
+            ol: {  // Estilo para listas ordenadas
+              "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
+            },
+            li: {  // Estilo para elementos de lista
+              "color": `${colorText} !important`,
+              "font-size":`${displaySettings.fontSize}px !important`
+            },
+      });
+    }
 
 
     function search(q) {
@@ -234,29 +306,6 @@
           book.spine.spineItems.map(item => item.load(book.load.bind(book)).then(item.find.bind(item, q)).finally(item.unload.bind(item)))
       ).then(results => Promise.resolve([].concat.apply([], results)));
     };
-
-    function setFontSize(fontSize){
-      rendition.themes.default({
-        p: {
-        "font-size":`${fontSize}px !important`
-        },
-        code: {  // Estilo para texto en formato de código
-        "font-size":`${fontSize}px !important`
-        },
-        pre: {  // Estilo para bloques de código preformateado
-        "font-size":`${fontSize}px !important`
-        },
-        ul: {  // Estilo para listas desordenadas
-        "font-size":`${fontSize}px !important`
-        },
-        ol: {  // Estilo para listas ordenadas
-        "font-size":`${fontSize}px !important`
-        },
-        li: {  // Estilo para elementos de lista
-        "font-size":`${fontSize}px !important`
-        },
-      });
-    }
 
     function setSpread(spread){
       rendition.spread(spread);
@@ -328,8 +377,6 @@
         var args = [location]
         window.flutter_inappwebview.callHandler('relocated', ...args);
       });
-     setFontSize(displaySettings.fontSize);
-
     }
 
 
