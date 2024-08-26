@@ -149,9 +149,9 @@ class EpubController {
   }
 
   ///Adjust font size in epub viewer
-  setFontSize({required double fontSize}) async {
+  setFontSize({required int fontSize, required String background, required String colorText}) async {
     await webViewController?.evaluateJavascript(
-        source: 'setFontSize("$fontSize")');
+        source: 'setFontSize("$fontSize", "$background", "$colorText")');
   }
 
   setTheme({required String background, required String colorText}) {
