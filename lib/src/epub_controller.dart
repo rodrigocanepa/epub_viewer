@@ -62,12 +62,34 @@ class EpubController {
   Future<List<EpubChapter>> parseChapters() async {
     if (chapters.isNotEmpty) return chapters;
     checkEpubLoaded();
-    final result =
-        await webViewController!.evaluateJavascript(source: 'getChapters()');
-    chapters =
-        List<EpubChapter>.from(result.map((e) => EpubChapter.fromJson(e)));
-    return chapters;
+    try{
+      final result = await webViewController!.evaluateJavascript(source: 'getChapters()');
+      // Asumimos que result es una lista directa de mapas
+      List<dynamic> jsonResponse = result as List<dynamic>;
+
+      // Convertir cada objeto en `jsonResponse` a un `Map<String, dynamic>`
+      List<Map<String, dynamic>> convertedResponse = jsonResponse.map((e) {
+        if (e is Map<Object?, Object?>) {
+          // Convertir el mapa genérico a Map<String, dynamic>
+          return Map<String, dynamic>.from(e);
+        } else {
+          throw Exception('Expected a Map but got ${e.runtimeType}');
+        }
+      }).toList();
+
+      // Convertir la lista de mapas a una lista de objetos EpubChapter
+      chapters = List<EpubChapter>.from(
+          convertedResponse.map((e) => EpubChapter.fromJson(e))
+      );
+      return chapters;
+    } catch(e){
+      var error = e;
+      print(e);
+      return [];
+    }
+
   }
+
 
   Completer searchResultCompleter = Completer<List<EpubSearchResult>>();
 
